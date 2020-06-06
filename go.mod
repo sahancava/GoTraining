@@ -1,1 +1,3 @@
-module "github/GoTraining"
+module github/GoTraining
+
+go 1.14

@@ -3,5 +3,6 @@ package main
 import "fmt"
 
 func main() {
-	fmt.Println("empty.")
+	nil, _ := fmt.Println("empty.")
+	fmt.Println(nil)
 }
