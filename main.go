@@ -3,5 +3,12 @@ package main
 import "fmt"
 
 func main() {
-	fmt.Println("denessme2")
+	i := 1
+	for {
+		fmt.Println(i)
+		i++
+		if i > 9 {
+			break
+		}
+	}
 }
