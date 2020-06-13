@@ -1,8 +1,0 @@
-Starting linting the current package at /home/sahan/work/GoTraining
-/home/sahan/work/GoTraining>Finished running tool: /root/go/bin/golint
-/home/sahan/work/GoTraining/hello.go:5: exported function Hello should have comment or be unexported
-
-Starting linting the current package at /home/sahan/work/GoTraining
-/home/sahan/work/GoTraining>Finished running tool: /root/go/bin/golint
-/home/sahan/work/GoTraining/hello.go:5: exported function Hello should have comment or be unexported
-
