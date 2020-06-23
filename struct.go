@@ -19,8 +19,8 @@ func main() {
 
 	p1 := student{
 		person: person{
-			name:    `Şahan`,
-			surname: `ÇAVA`,
+			name:    `Student Name`,
+			surname: `Student Surname`,
 			age:     29},
 		isStudent: true,
 	}
