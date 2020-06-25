@@ -10,42 +10,43 @@ import (
 
 	_ "github.com/lib/pq"
 )
-var db22 *sql.DB
-// repository contains the details of a repository
-type CitySummary2 struct {
-	CityID int `json:"city_id" db:"city_id"`
-	CityName string `json:"city_name" db:"city"`
+
+var db *sql.DB
+
+type City struct {
+	CityID     int       `json:"city_id" db:"city_id"`
+	CityName   string    `json:"city_name" db:"city"`
 	InsertDate time.Time `json:"insert_date" db:"last_update"`
-	CountryID int `json:"country_id" db:"country_id"`
+	CountryID  int       `json:"country_id" db:"country_id"`
 }
-type repositories2 struct {
-	Repositories []CitySummary2
+type repository struct {
+	cityRepository []City
 }
 
 const (
-	dbhost22 = "localhost"
-	dbport22 = 5432
-	dbuser22 = "postgres"
-	dbpass22 = "Asdf1234"
-	dbname22 = "dvdrental"
+	dbhost = "localhost"
+	dbport = 5432
+	dbuser = "postgres"
+	dbpass = "Asdf1234"
+	dbname = "dvdrental"
 )
 
 func main() {
 	initDb()
-	defer db22.Close()
+	defer db.Close()
 	http.HandleFunc("/api/index", indexHandler)
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
 func initDb() {
-	//config := dbConfig()
-	var err error
-	psqlInfo := fmt.Sprintf("postgres://%s:%s@%s:%d/%s", dbuser22, dbpass22, dbhost22, dbport22, dbname22)
 
-	db22, err = sql.Open("postgres", psqlInfo)
+	var err error
+	psqlInfo := fmt.Sprintf("postgres://%s:%s@%s:%d/%s", dbuser, dbpass, dbhost, dbport, dbname)
+
+	db, err = sql.Open("postgres", psqlInfo)
 	if err != nil {
 		panic(err)
 	}
-	err = db22.Ping()
+	err = db.Ping()
 	if err != nil {
 		panic(err)
 	}
@@ -53,7 +54,7 @@ func initDb() {
 }
 
 func indexHandler(w http.ResponseWriter, req *http.Request) {
-	repos := repositories2{}
+	repos := repository{}
 
 	err := queryRepos(&repos)
 	if err != nil {
@@ -70,9 +71,8 @@ func indexHandler(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(w, string(out))
 }
 
-// queryRepos first fetches the repositories data from the db
-func queryRepos(repos *repositories2) error {
-	rows, err := db22.Query(`
+func queryRepos(repos *repository) error {
+	rows, err := db.Query(`
 		SELECT
 			city_id,
 			city,
@@ -84,10 +84,9 @@ func queryRepos(repos *repositories2) error {
 		return err
 	}
 	defer rows.Close()
-	//snbs := make([]CitySummary2, 10)
 
 	for rows.Next() {
-		repo := CitySummary2{}
+		repo := City{}
 		err = rows.Scan(
 			&repo.CityID,
 			&repo.CityName,
@@ -97,8 +96,7 @@ func queryRepos(repos *repositories2) error {
 		if err != nil {
 			return err
 		}
-		//snbs = append(snbs,repo)
-		repos.Repositories = append(repos.Repositories, repo)
+		repos.cityRepository = append(repos.cityRepository, repo)
 	}
 	err = rows.Err()
 	if err != nil {
