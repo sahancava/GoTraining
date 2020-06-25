@@ -11,16 +11,17 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var db *sql.DB
+var db22 *sql.DB
 
 type City struct {
 	CityID     int       `json:"city_id" db:"city_id"`
 	CityName   string    `json:"city_name" db:"city"`
 	InsertDate time.Time `json:"insert_date" db:"last_update"`
 	CountryID  int       `json:"country_id" db:"country_id"`
+	Country string `json:"country" db:"country"`
 }
 type repository struct {
-	cityRepository []City
+	Data []City
 }
 
 const (
@@ -33,7 +34,7 @@ const (
 
 func main() {
 	initDb()
-	defer db.Close()
+	defer db22.Close()
 	http.HandleFunc("/api/index", indexHandler)
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
@@ -42,11 +43,11 @@ func initDb() {
 	var err error
 	psqlInfo := fmt.Sprintf("postgres://%s:%s@%s:%d/%s", dbuser, dbpass, dbhost, dbport, dbname)
 
-	db, err = sql.Open("postgres", psqlInfo)
+	db22, err = sql.Open("postgres", psqlInfo)
 	if err != nil {
 		panic(err)
 	}
-	err = db.Ping()
+	err = db22.Ping()
 	if err != nil {
 		panic(err)
 	}
@@ -72,13 +73,16 @@ func indexHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func queryRepos(repos *repository) error {
-	rows, err := db.Query(`
+	rows, err := db22.Query(`
 		SELECT
 			city_id,
 			city,
-			country_id,
-			last_update
-		FROM city
+			ct.country_id,
+			ct.last_update,
+			co.country
+		FROM city as ct
+		JOIN country as co
+		ON co.country_id=ct.country_id
 		LIMIT 5`)
 	if err != nil {
 		return err
@@ -92,11 +96,12 @@ func queryRepos(repos *repository) error {
 			&repo.CityName,
 			&repo.CountryID,
 			&repo.InsertDate,
+			&repo.Country,
 		)
 		if err != nil {
 			return err
 		}
-		repos.cityRepository = append(repos.cityRepository, repo)
+		repos.Data = append(repos.Data, repo)
 	}
 	err = rows.Err()
 	if err != nil {
