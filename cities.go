@@ -1,9 +1,9 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github/GoTraining/packages/connector"
 	"log"
 	"net/http"
 	"strconv"
@@ -11,8 +11,6 @@ import (
 
 	_ "github.com/lib/pq"
 )
-
-var db22 *sql.DB
 
 type City struct {
 	CityID     int       `json:"city_id" db:"city_id"`
@@ -25,50 +23,27 @@ type repository struct {
 	Data  []City
 	limit int
 }
-
-const (
-	dbhost = "localhost"
-	dbport = 5432
-	dbuser = "postgres"
-	dbpass = "Asdf1234"
-	dbname = "dvdrental"
-)
+var db = connector.ConnectDB()
 
 func main() {
-	initDb()
-	defer db22.Close()
+	connector.ConnectDB()
+	defer db.Close()
 	http.HandleFunc("/api/index", indexHandler)
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
-func initDb() {
 
-	var err error
-	psqlInfo := fmt.Sprintf("postgres://%s:%s@%s:%d/%s", dbuser, dbpass, dbhost, dbport, dbname)
-
-	db22, err = sql.Open("postgres", psqlInfo)
-	if err != nil {
-		panic(err)
-	}
-	err = db22.Ping()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Successfully connected!")
-}
 
 func indexHandler(w http.ResponseWriter, req *http.Request) {
 	repos := repository{}
-	q, ok := req.URL.Query()["limit"]
-	repos.limit, _ = strconv.Atoi(q[0])
-	if !ok {
+	q := req.URL.Query().Get("limit")
+	repos.limit, _ = strconv.Atoi(q)
+	if q=="" {
 		repos.limit = 10
 	} else {
 		if repos.limit < 1 {
 			repos.limit = 10
 		} else {
-			for _, v := range q {
-				repos.limit, _ = strconv.Atoi(v)
-			}
+				repos.limit, _ = strconv.Atoi(q)
 		}
 	}
 	err := queryRepos(&repos)
@@ -78,6 +53,7 @@ func indexHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	out, err := json.Marshal(repos)
+
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -87,7 +63,6 @@ func indexHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func queryRepos(repos *repository) error {
-	//limit := 10
 	sql := fmt.Sprintf(`
 						SELECT
 							city_id,
@@ -101,7 +76,7 @@ func queryRepos(repos *repository) error {
 						ORDER by city_id ASC
 						LIMIT %d`,
 		repos.limit)
-	rows, err := db22.Query(sql)
+	rows, err := db.Query(sql)
 	if err != nil {
 		return err
 	}
