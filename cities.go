@@ -12,7 +12,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type City struct {
+type Cities struct {
 	CityID     int       `json:"city_id" db:"city_id"`
 	CityName   string    `json:"city_name" db:"city"`
 	InsertDate time.Time `json:"insert_date" db:"last_update"`
@@ -20,9 +20,10 @@ type City struct {
 	Country    string    `json:"country" db:"country"`
 }
 type repository struct {
-	Data  []City
+	Data  []Cities
 	limit int
 }
+
 var db = connector.ConnectDB()
 
 func main() {
@@ -32,18 +33,17 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
 
-
 func indexHandler(w http.ResponseWriter, req *http.Request) {
 	repos := repository{}
 	q := req.URL.Query().Get("limit")
 	repos.limit, _ = strconv.Atoi(q)
-	if q=="" {
+	if q == "" {
 		repos.limit = 10
 	} else {
 		if repos.limit < 1 {
 			repos.limit = 10
 		} else {
-				repos.limit, _ = strconv.Atoi(q)
+			repos.limit, _ = strconv.Atoi(q)
 		}
 	}
 	err := queryRepos(&repos)
@@ -83,7 +83,7 @@ func queryRepos(repos *repository) error {
 	defer rows.Close()
 
 	for rows.Next() {
-		repo := City{}
+		repo := Cities{}
 		err = rows.Scan(
 			&repo.CityID,
 			&repo.CityName,
