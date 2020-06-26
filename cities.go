@@ -23,7 +23,7 @@ type City struct {
 }
 type repository struct {
 	Data  []City
-	limit int `json:"limit"`
+	limit int
 }
 
 const (
