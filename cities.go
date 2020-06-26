@@ -27,7 +27,7 @@ type repository struct {
 var db = connector.ConnectDB()
 
 func main() {
-	connector.ConnectDB()
+	connector.RunDB()
 	defer db.Close()
 	http.HandleFunc("/api/index", indexHandler)
 	log.Fatal(http.ListenAndServe(":8000", nil))
