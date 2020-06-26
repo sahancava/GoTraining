@@ -23,3 +23,7 @@ func ConnectDB() *sql.DB {
 	}
 	return db
 }
+
+func RunDB() {
+	ConnectDB()
+}
