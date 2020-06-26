@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -18,10 +19,11 @@ type City struct {
 	CityName   string    `json:"city_name" db:"city"`
 	InsertDate time.Time `json:"insert_date" db:"last_update"`
 	CountryID  int       `json:"country_id" db:"country_id"`
-	Country string `json:"country" db:"country"`
+	Country    string    `json:"country" db:"country"`
 }
 type repository struct {
-	Data []City
+	Data  []City
+	limit int `json:"limit"`
 }
 
 const (
@@ -56,7 +58,19 @@ func initDb() {
 
 func indexHandler(w http.ResponseWriter, req *http.Request) {
 	repos := repository{}
-
+	q, ok := req.URL.Query()["limit"]
+	repos.limit, _ = strconv.Atoi(q[0])
+	if !ok {
+		repos.limit = 10
+	} else {
+		if repos.limit < 1 {
+			repos.limit = 10
+		} else {
+			for _, v := range q {
+				repos.limit, _ = strconv.Atoi(v)
+			}
+		}
+	}
 	err := queryRepos(&repos)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
@@ -73,17 +87,21 @@ func indexHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func queryRepos(repos *repository) error {
-	rows, err := db22.Query(`
-		SELECT
-			city_id,
-			city,
-			ct.country_id,
-			ct.last_update,
-			co.country
-		FROM city as ct
-		JOIN country as co
-		ON co.country_id=ct.country_id
-		LIMIT 5`)
+	//limit := 10
+	sql := fmt.Sprintf(`
+						SELECT
+							city_id,
+							city,
+							ct.country_id,
+							ct.last_update,
+							co.country
+						FROM city as ct
+						JOIN country as co
+						ON co.country_id=ct.country_id
+						ORDER by city_id ASC
+						LIMIT %d`,
+		repos.limit)
+	rows, err := db22.Query(sql)
 	if err != nil {
 		return err
 	}
