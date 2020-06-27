@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github/GoTraining/packages/connector"
+	"github/GoTraining/packages/token"
 	"log"
 	"net/http"
 	"strconv"
@@ -34,6 +35,10 @@ func main() {
 }
 
 func indexHandler(w http.ResponseWriter, req *http.Request) {
+	key := token.TokenChecker(w, req)
+	for key != true {
+		return
+	}
 	repos := repository{}
 	q := req.URL.Query().Get("limit")
 	repos.limit, _ = strconv.Atoi(q)
