@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"github/GoTraining/packages/connector"
 	"github/GoTraining/packages/token"
 	"log"
@@ -13,7 +14,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type Cities struct {
+type City struct {
 	CityID     int       `json:"city_id" db:"city_id"`
 	CityName   string    `json:"city_name" db:"city"`
 	InsertDate time.Time `json:"insert_date" db:"last_update"`
@@ -21,8 +22,10 @@ type Cities struct {
 	Country    string    `json:"country" db:"country"`
 }
 type repository struct {
-	Data  []Cities
-	limit int
+	Data    []City
+	ID      int    `json:"-"`
+	Message string `json:"Message"`
+	Success bool   `json:"is_Success"`
 }
 
 var db = connector.ConnectDB()
@@ -30,36 +33,37 @@ var db = connector.ConnectDB()
 func main() {
 	connector.RunDB()
 	defer db.Close()
-	http.HandleFunc("/GetCities", indexHandler)
+	handler := mux.NewRouter()
+	handler.HandleFunc("/GetCity/{id}", indexHandler).Methods("GET")
+	http.Handle("/", handler)
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
 
 func indexHandler(w http.ResponseWriter, req *http.Request) {
 	key := token.TokenChecker(w, req)
-	for key != true {
+	if key != true {
 		return
 	}
 	repos := repository{}
-	q := req.URL.Query().Get("limit")
-	repos.limit, _ = strconv.Atoi(q)
-	if q == "" {
-		repos.limit = 10
-	} else {
-		if repos.limit < 1 {
-			repos.limit = 10
-		} else {
-			repos.limit, _ = strconv.Atoi(q)
-		}
-	}
+	params := mux.Vars(req)
+	repos.ID, _ = strconv.Atoi(params["id"])
 	err := queryRepos(&repos)
+
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
+	repos.Success = true
+	repos.Message = "Success"
+	out, erro := json.Marshal(repos)
 
-	out, err := json.Marshal(repos)
+	if len(repos.Data) < 1 {
+		repos.Message = fmt.Sprintf("City with ID %d cannot be found.", repos.ID)
+		repos.Success = false
+		out, _ = json.Marshal(repos)
+	}
 
-	if err != nil {
+	if erro != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
@@ -78,9 +82,8 @@ func queryRepos(repos *repository) error {
 						FROM city as ct
 						JOIN country as co
 						ON co.country_id=ct.country_id
-						ORDER by city_id ASC
-						LIMIT %d`,
-		repos.limit)
+						WHERE city_id=%d`,
+		repos.ID)
 	rows, err := db.Query(sql)
 	if err != nil {
 		return err
@@ -88,7 +91,7 @@ func queryRepos(repos *repository) error {
 	defer rows.Close()
 
 	for rows.Next() {
-		repo := Cities{}
+		repo := City{}
 		err = rows.Scan(
 			&repo.CityID,
 			&repo.CityName,
