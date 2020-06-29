@@ -58,7 +58,7 @@ func addHandler(w http.ResponseWriter, req *http.Request) {
 	repos := addActor{}
 	params := mux.Vars(req)
 	repos.FirstName, _ = params["first_name"]
-	repos.LastName, _ = params["last_name"]
+	repos.LastName, _ = params["first_name"]
 	repos.InsertDate = time.Now()
 
 	err := addRepos(&repos)
