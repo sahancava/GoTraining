@@ -19,7 +19,7 @@ type City struct {
 	CityName   string    `json:"city_name" db:"city"`
 	InsertDate time.Time `json:"insert_date" db:"last_update"`
 	CountryID  int       `json:"country_id" db:"country_id"`
-	Country    string    `json:"country" db:"country"`
+	Country    string    `json:"country"`
 }
 
 type addCity struct {
