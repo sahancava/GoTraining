@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"reflect"
 
 	_ "github.com/lib/pq"
 )
@@ -89,6 +90,7 @@ func indexHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	repos := repository{}
 	params := mux.Vars(req)
+	id:=reflect.TypeOf(params["id"]).Kind()
 	repos.ID, _ = strconv.Atoi(params["id"])
 	err := queryRepos(&repos)
 
@@ -100,17 +102,22 @@ func indexHandler(w http.ResponseWriter, req *http.Request) {
 	repos.Message = "Success"
 	out, erro := json.Marshal(repos)
 
-	if len(repos.Data) < 1 {
+	if id!=reflect.Int {
+		fmt.Println("int değil")
+		repos.Message = fmt.Sprintf("ID can only take integer values.")
+		out, _ = json.Marshal(repos)
+	}
+
+	/*if len(repos.Data) < 1 {
 		repos.Message = fmt.Sprintf("City with ID %d cannot be found.", repos.ID)
 		repos.Success = false
 		out, _ = json.Marshal(repos)
-	}
+	}*/
 
 	if erro != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-
 	fmt.Fprintf(w, string(out))
 }
 
