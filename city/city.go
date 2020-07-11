@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"github/GoTraining/packages/connector"
 	"github/GoTraining/packages/token"
 	"log"
@@ -11,6 +10,8 @@ import (
 	"strconv"
 	"time"
 	"unicode"
+
+	"github.com/gorilla/mux"
 
 	_ "github.com/lib/pq"
 )
@@ -110,7 +111,7 @@ func indexHandler(w http.ResponseWriter, req *http.Request) {
 	repos.Message = "Success"
 	out, erro := json.Marshal(repos)
 
-	if isInt(params["id"])!=true {
+	if isInt(params["id"]) != true {
 		repos.Message = fmt.Sprintf("ID can only take integer values.")
 		repos.Success = false
 		out, _ = json.Marshal(repos)

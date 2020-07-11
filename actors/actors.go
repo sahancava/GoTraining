@@ -14,13 +14,13 @@ import (
 )
 
 type Actors struct {
-	ActorID     int       `json:"actor_id" db:"actor_id"`
-	FirstName   string    `json:"first_name" db:"first_name"`
+	ActorID    int       `json:"actor_id" db:"actor_id"`
+	FirstName  string    `json:"first_name" db:"first_name"`
 	LastName   string    `json:"last_name" db:"last_name"`
 	InsertDate time.Time `json:"insert_date" db:"last_update"`
 }
 
-type repository struct {
+type actorRepository struct {
 	Data  []Actors
 	limit int
 }
@@ -39,7 +39,7 @@ func indexHandler(w http.ResponseWriter, req *http.Request) {
 	for key != true {
 		return
 	}
-	repos := repository{}
+	repos := actorRepository{}
 	q := req.URL.Query().Get("limit")
 	repos.limit, _ = strconv.Atoi(q)
 	if q == "" {
@@ -67,7 +67,7 @@ func indexHandler(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(w, string(out))
 }
 
-func queryRepos(repos *repository) error {
+func queryRepos(repos *actorRepository) error {
 	sql := fmt.Sprintf(`
 						SELECT
 							actor_id,
