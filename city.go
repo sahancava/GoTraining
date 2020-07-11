@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-	"reflect"
+	"unicode"
 
 	_ "github.com/lib/pq"
 )
@@ -83,6 +83,15 @@ func addHandler(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(w, string(out))
 }
 
+func isInt(s string) bool {
+	for _, c := range s {
+		if !unicode.IsDigit(c) {
+			return false
+		}
+	}
+	return true
+}
+
 func indexHandler(w http.ResponseWriter, req *http.Request) {
 	key := token.TokenChecker(w, req)
 	if key != true {
@@ -90,7 +99,6 @@ func indexHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	repos := repository{}
 	params := mux.Vars(req)
-	id:=reflect.TypeOf(params["id"]).Kind()
 	repos.ID, _ = strconv.Atoi(params["id"])
 	err := queryRepos(&repos)
 
@@ -102,18 +110,16 @@ func indexHandler(w http.ResponseWriter, req *http.Request) {
 	repos.Message = "Success"
 	out, erro := json.Marshal(repos)
 
-	if id!=reflect.Int {
-		fmt.Println("int değil")
+	if isInt(params["id"])!=true {
 		repos.Message = fmt.Sprintf("ID can only take integer values.")
+		repos.Success = false
 		out, _ = json.Marshal(repos)
 	}
-
-	/*if len(repos.Data) < 1 {
+	if len(repos.Data) < 1 {
 		repos.Message = fmt.Sprintf("City with ID %d cannot be found.", repos.ID)
 		repos.Success = false
 		out, _ = json.Marshal(repos)
-	}*/
-
+	}
 	if erro != nil {
 		http.Error(w, err.Error(), 500)
 		return
