@@ -8,10 +8,14 @@
             "name": "Launch",
             "type": "go",
             "request": "launch",
-            "mode": "auto",
+            "mode": "debug",
+            "port": 8000,
+            "host": "127.0.0.1",
             "program": "${fileDirname}",
-            "env": {},
-            "args": []
+            "env": {
+            },
+            "args": [],
+            "showLog": true
         }
     ]
 }
