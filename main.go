@@ -41,5 +41,5 @@ func main() {
 	handler.HandleFunc("/AddCountry/country={country}", country.AddHandler).Methods("GET")
 	handler.HandleFunc("/GetCountries", countries.IndexHandler)
 	http.Handle("/", handler)
-	log.Fatal(http.ListenAndServe(":8000", nil))
+	log.Fatal(http.ListenAndServe(":80002", nil))
 }
