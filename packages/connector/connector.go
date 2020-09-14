@@ -2,13 +2,14 @@ package connector
 
 import (
 	"database/sql"
-	"github.com/joho/godotenv"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 func ConnectDB() *sql.DB {
 	var err error
-	err = godotenv.Load(".env")
+	err = godotenv.Load("/home/sahan/git_repo/GoTraining/packages/connector/.env")
 	psqlInfo := os.ExpandEnv("$POSTGRES_URL")
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
