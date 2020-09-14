@@ -9,7 +9,7 @@ import (
 
 func ConnectDB() *sql.DB {
 	var err error
-	err = godotenv.Load("/home/sahan/git_repo/GoTraining/packages/connector/.env")
+	err = godotenv.Load("./packages/connector/.env")
 	psqlInfo := os.ExpandEnv("$POSTGRES_URL")
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
